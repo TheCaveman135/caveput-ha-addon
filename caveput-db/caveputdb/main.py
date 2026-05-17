@@ -3,7 +3,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import APIRouter, FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -52,6 +52,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+router = APIRouter(prefix="/caveput")
+
 # ── Auth ──────────────────────────────────────────────────────────────────────
 
 class LoginRequest(BaseModel):
@@ -63,7 +65,7 @@ class LoginResponse(BaseModel):
     expires_at: str
     username: str
 
-@app.post("/auth/login", response_model=LoginResponse)
+@router.post("/auth/login", response_model=LoginResponse)
 async def login(body: LoginRequest):
     if not auth.check_credentials(body.username, body.password):
         raise HTTPException(
@@ -79,7 +81,7 @@ async def login(body: LoginRequest):
 
 # ── Catalog ───────────────────────────────────────────────────────────────────
 
-@app.get("/api/v1/catalog")
+@router.get("/api/v1/catalog")
 async def get_catalog(username: str = Depends(auth.require_auth)):
     catalog = database.get_catalog()
     if catalog is None:
@@ -96,7 +98,7 @@ async def get_catalog(username: str = Depends(auth.require_auth)):
 
 # ── Status ────────────────────────────────────────────────────────────────────
 
-@app.get("/api/v1/status")
+@router.get("/api/v1/status")
 async def get_status(username: str = Depends(auth.require_auth)):
     status_data = database.get_sync_status()
     next_run = _scheduler.get_job("weekly_sync")
@@ -108,7 +110,7 @@ async def get_status(username: str = Depends(auth.require_auth)):
 
 # ── Manual Sync ───────────────────────────────────────────────────────────────
 
-@app.post("/api/v1/sync")
+@router.post("/api/v1/sync")
 async def trigger_sync(username: str = Depends(auth.require_auth)):
     if sync.is_syncing():
         return {"status": "already_running"}
@@ -117,9 +119,11 @@ async def trigger_sync(username: str = Depends(auth.require_auth)):
 
 # ── Health (no auth) ──────────────────────────────────────────────────────────
 
-@app.get("/health")
+@router.get("/health")
 async def health():
     return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
+
+app.include_router(router)
 
 # ── Entry Point ───────────────────────────────────────────────────────────────
 
