@@ -1,0 +1,38 @@
+name: "CavePut DB"
+description: "Local ingredient database for CavePut. Syncs from Zenput weekly and serves the CavePut iOS app."
+version: "1.0.0"
+slug: "caveput_db"
+init: false
+homeassistant_api: false
+auth_api: false
+
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+
+ports:
+  8765/tcp: 8765
+ports_description:
+  8765/tcp: "CavePut DB API — connect the iOS app to this port"
+
+options:
+  zenput_email: ""
+  zenput_password: ""
+  db_username: "caveput"
+  db_password: "changeme"
+  sync_hour: 23
+  sync_day_of_week: "sun"
+
+schema:
+  zenput_email: str
+  zenput_password: str
+  db_username: str
+  db_password: str
+  sync_hour: int
+  sync_day_of_week: str
+
+map:
+  - data:rw
