@@ -1,18 +1,13 @@
+import hmac
 from datetime import datetime, timedelta, timezone
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
 from . import config
 
-_pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 _bearer = HTTPBearer()
-
-def verify_password(plain: str, hashed: str) -> bool:
-    return _pwd_ctx.verify(plain, hashed)
-
-def hash_password(plain: str) -> str:
-    return _pwd_ctx.hash(plain)
 
 def create_token(username: str) -> tuple[str, datetime]:
     expire = datetime.now(timezone.utc) + timedelta(days=config.JWT_EXPIRE_DAYS)
@@ -27,7 +22,7 @@ def decode_token(token: str) -> str:
         if not username:
             raise ValueError("No subject")
         return username
-    except JWTError as e:
+    except jwt.PyJWTError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
@@ -38,4 +33,6 @@ def require_auth(credentials: HTTPAuthorizationCredentials = Depends(_bearer)) -
     return decode_token(credentials.credentials)
 
 def check_credentials(username: str, password: str) -> bool:
-    return username == config.DB_USERNAME and password == config.DB_PASSWORD
+    ok_user = hmac.compare_digest(username, config.DB_USERNAME)
+    ok_pass = hmac.compare_digest(password, config.DB_PASSWORD)
+    return ok_user and ok_pass
