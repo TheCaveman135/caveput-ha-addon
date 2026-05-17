@@ -7,6 +7,9 @@ on:
       - 'caveput-db/**'
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,6 +27,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Lowercase image name
+        run: echo "IMAGE=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -38,11 +44,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./caveput-db
           platforms: ${{ matrix.platform }}
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/${{ matrix.arch }}-caveput-db:1.0.0
-            ghcr.io/${{ github.repository }}/${{ matrix.arch }}-caveput-db:latest
+            ${{ env.IMAGE }}/${{ matrix.arch }}-caveput-db:1.0.0
+            ${{ env.IMAGE }}/${{ matrix.arch }}-caveput-db:latest
