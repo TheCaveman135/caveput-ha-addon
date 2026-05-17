@@ -1,7 +1,6 @@
-ARG BUILD_FROM
-FROM $BUILD_FROM
+FROM python:3.12-alpine
 
-RUN apk add --no-cache python3 py3-pip gcc musl-dev libffi-dev openssl-dev python3-dev
+RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 
 WORKDIR /app
 
