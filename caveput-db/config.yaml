@@ -1,6 +1,6 @@
 name: "CavePut DB"
 description: "Local ingredient database for CavePut. Syncs from Zenput weekly and serves the CavePut iOS app."
-version: "1.0.0"
+version: "1.0.1"
 slug: "caveput_db"
 image: "ghcr.io/thecaveman135/caveput-ha-addon/{arch}-caveput-db"
 init: false

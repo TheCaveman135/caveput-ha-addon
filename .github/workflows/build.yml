@@ -51,5 +51,5 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           tags: |
-            ${{ env.IMAGE }}/${{ matrix.arch }}-caveput-db:1.0.0
+            ${{ env.IMAGE }}/${{ matrix.arch }}-caveput-db:1.0.1
             ${{ env.IMAGE }}/${{ matrix.arch }}-caveput-db:latest
